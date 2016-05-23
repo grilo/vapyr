@@ -34,7 +34,7 @@ class Client:
 # don't support "post" method, we wrap the standard dict class. This allows
 # us to write: api.projects[project_id].messages.post({'x': 'new_message'})
 # Apart from supporting POST, it behaves exactly like a normal dictionary.
-class ResourceContainer(collections.MutableMapping):
+class ResourceProxy(collections.MutableMapping):
 
     def __init__(self, client, endpoint, resource_type, *args, **kwargs):
         self.client = client
@@ -95,11 +95,11 @@ class Resource:
 
         # Build up the cache if there is none
         if not name in self.cache.keys():
-            self.cache[name] = ResourceContainer(self.client, self.endpoint + '/' + name, self.resources[name])
+            self.cache[name] = ResourceProxy(self.client, self.endpoint + '/' + name, self.resources[name])
             """
                 Eagerly fetch the resource (for example, /users) which will allow
                 the user to iterate through the results. None given, we have to
-                trust the ResourceContainer object to do what's right.
+                trust the ResourceProxy object to do what's right.
             """
             for i in self.client.request(self.endpoint + '/' + name):
                 resource_instance = self.resources[name](self.client, self.endpoint, i)
